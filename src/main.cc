@@ -58,7 +58,7 @@ int main(){
         string ROOTname = baseName + ".root";
         TFile *outputFile = new TFile(ROOTname.c_str(),"recreate");
 
-        unsigned int maxThresh = 0;
+        unsigned int maxThresh = 45;
         TH2I* ProfilEvo = new TH2I("profevo","Muon hit profil evolution in RPC partition B with threshold",91,0,91,32,0.5,32.5);
         TH2I* ProfilEvoF = new TH2I("profevo_f","Forward muon hit profil evolution in RPC partition B with threshold",maxThresh+1,0,maxThresh+1,32,0.5,32.5);
         TH2I* ProfilEvoB = new TH2I("profevo_b","Backward muon hit profil evolution in RPC partition B with threshold",maxThresh+1,0,maxThresh+1,32,0.5,32.5);
@@ -219,7 +219,7 @@ int main(){
             cout << endl;
 
             TF1* AllMuons = new TF1("fit","[0]*exp(-0.5*((x-[1])/[2])**2) / (1 + exp(-[3]*(x-[4])))+[5]*exp(-0.5*((x-[6])/[7])**2) / (1 + exp(-[8]*(x-[9])))",1,32);
-            AllMuons->SetParLimits(0,1,1000);
+            AllMuons->SetParLimits(0,1,20000);
             AllMuons->SetParameter(1,26);
             AllMuons->SetParLimits(1,1,32);
             AllMuons->SetParameter(2,6);
@@ -228,7 +228,7 @@ int main(){
             AllMuons->SetParLimits(3,-10,-0.01);
             AllMuons->SetParameter(4,24);
             AllMuons->SetParLimits(4,1,32);
-            AllMuons->SetParLimits(5,1,500);
+            AllMuons->SetParLimits(5,1,10000);
             AllMuons->SetParameter(6,27);
             AllMuons->SetParLimits(6,1,32);
             AllMuons->SetParameter(7,2);
@@ -240,7 +240,7 @@ int main(){
             HitProfil->Fit(AllMuons,"QR");
 
             TF1* ForwardMuons = new TF1("fit","[0]*exp(-0.5*((x-[1])/[2])**2) / (1 + exp(-[3]*(x-[4])))",1,32);
-            ForwardMuons->SetParLimits(0,1,1000);
+            ForwardMuons->SetParLimits(0,1,20000);
             ForwardMuons->SetParameter(1,26);
             ForwardMuons->SetParLimits(1,1,32);
             ForwardMuons->SetParameter(2,6);
@@ -252,7 +252,7 @@ int main(){
             HitProfilF->Fit(ForwardMuons,"QR");
 
             TF1* BackwardMuons = new TF1("fit","[0]*exp(-0.5*((x-[1])/[2])**2) / (1 + exp(-[3]*(x-[4])))",1,32);
-            BackwardMuons->SetParLimits(0,1,500);
+            BackwardMuons->SetParLimits(0,1,10000);
             BackwardMuons->SetParameter(1,27);
             BackwardMuons->SetParLimits(1,1,32);
             BackwardMuons->SetParameter(2,2);
