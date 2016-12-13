@@ -66,6 +66,18 @@ string intTostring(int value){
     return word;
 }
 
+//Function to cast a float into a string
+string floatTostring(float value){
+    string word;
+    stringstream ss;
+    ss.setf(ios::fixed, ios::floatfield);
+    ss.precision(3);
+    ss << value;
+    ss >> word;
+
+    return word;
+}
+
 //********************************************************************************************
 
 //Definition of Coordinates
@@ -401,6 +413,17 @@ double getDistanceThroughTopScint(const Scintillator& scint, double beta){
     d = sqrt((scint.MuonHit[i].x-scint.MuonHit[0].x)*(scint.MuonHit[i].x-scint.MuonHit[0].x)
     + (scint.MuonHit[i].y-scint.MuonHit[0].y)*(scint.MuonHit[i].y-scint.MuonHit[0].y)
     + (scint.MuonHit[i].z-scint.MuonHit[0].z)*(scint.MuonHit[i].z-scint.MuonHit[0].z));
+
+    return d;
+}
+
+//To study the effect of the distance the muon travels through the RPC gas
+//volume. The gas volume is 2mm thick along the y axis. The muon direction
+//vector is given by the direction (theta,phi) and is :
+// v = (v.x;v.y;v.z) = ( sin(theta)cos(phi); sin(theta)sin(phi); cos(theta) )
+//The relation that needs to be satisfied is : d*v.y = 2 <=> d = 2/v.y
+double getDistanceThroughRPC(Direction direction){
+    double d = abs(2./(sin(direction.first)*sin(direction.second)));
 
     return d;
 }
