@@ -7,15 +7,9 @@ OBJ_DIR  = ./obj
 
 CC = g++ -std=c++11
 
-ROOT_INC     := $(ROOTSYS)/include
-ROOTCFLAGS   := $(shell root-config --cflags)
-ROOTLIBS     := $(shell root-config --libs)
+LFLAGS       := -Llib -L/usr/lib
 
-LFLAGS       := -Llib -L/usr/lib \
-                $(ROOTLIBS) 
-
-CFLAGS       := -ggdb -fPIC -DLINUX -Wall -funsigned-char \
-                -I$(INC_DIR) -I$(ROOT_INC) -I$(ROOTCFLAGS)
+CFLAGS       := -ggdb -fPIC -DLINUX -Wall -funsigned-char -I$(INC_DIR)
 
 all: $(BIN_DIR) $(OBJ_DIR) GIF-Geo
 

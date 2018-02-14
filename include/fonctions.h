@@ -25,34 +25,8 @@
 
 using namespace std;
 
-//Dimensions of the RE2-2
-#define A_WIDTH  868.
-#define AB_WIDTH 758.8
-#define BC_WIDTH 662.4
-#define C_WIDTH  578.
-
-#define A_LENGTH 620.8
-#define B_LENGTH 548.
-#define C_LENGTH 480.
-
-#define AB_LENGTH   A_LENGTH+B_LENGTH
-#define BC_LENGTH   B_LENGTH+C_LENGTH
-#define ABC_LENGTH  A_LENGTH+B_LENGTH+C_LENGTH
-
-#define A_X0 0.
-#define A_Y0 0.
-#define A_Z0 0.
-
-//Dimensions of the scintillator planes
-#define TRIGGER_LENGTH 320.
-#define TRIGGER_WIDTH 94.
-#define TRIGGER_THICK 45.
-#define TRIGGER_OFFSET 85.
-
-//First point a of the scintillator
-#define a_X0 770.
-#define a_Y0 -40.
-#define a_Z0 558.
+//pi Definition
+const double PI = 4*atan(1);
 
 //********************************************************************************************
 
@@ -78,6 +52,68 @@ string floatTostring(float value){
     return word;
 }
 
+//Function to convert deg angles to rad
+float DegToRad(float deg){
+    return deg*PI/180.;
+}
+
+//Function to convert rad angles to deg
+float RadToDeg(float rad){
+    return rad*180./PI;
+}
+
+//Function that returns the partition label
+char getPartition(unsigned int part){
+    if(part == 0) return 'A';
+    if(part == 1) return 'B';
+    if(part == 2) return 'C';
+    else return 'X';
+}
+
+//********************************************************************************************
+
+//CMS RPC constants
+#define NPARTITIONS 3
+#define NSTRIPS 32
+#define GASTHICKNESS 2
+
+//Dimensions of the RE2-2
+#define A_WIDTH  868.
+#define AB_WIDTH 758.8
+#define BC_WIDTH 662.4
+#define C_WIDTH  578.
+
+#define A_LENGTH 620.8
+#define B_LENGTH 548.
+#define C_LENGTH 480.
+
+#define AB_LENGTH   A_LENGTH+B_LENGTH
+#define BC_LENGTH   B_LENGTH+C_LENGTH
+#define ABC_LENGTH  A_LENGTH+B_LENGTH+C_LENGTH
+
+//Reference point a of the RPC
+
+#define A_X0 0.
+#define A_Y0 0.
+#define A_Z0 0.
+
+//Angle of the RPC du to trapezoidal shape (in rad)
+const double alpha = atan(2*A_LENGTH/(A_WIDTH-AB_WIDTH));
+
+//Dimensions of the scintillator planes
+#define TRIGGER_LENGTH 320.
+#define TRIGGER_WIDTH 94.
+#define TRIGGER_THICK 45.
+#define TRIGGER_OFFSET 85.
+
+//Reference point a of the scintillator
+#define a_X0 770.
+#define a_Y0 -40.
+#define a_Z0 558.
+
+//Inclination angle of the trigger (10deg in rad)
+const double beta = DegToRad(10.);
+
 //********************************************************************************************
 
 //Definition of Coordinates
@@ -91,7 +127,15 @@ typedef Point Vector;
 //A (theta,phi) angle pair.
 typedef std::pair<double,double> Direction;
 
-//A structure that defines a rectangle using 4 points
+//A structure that defines a scintillator as a rectangle parallelepiped having
+//6 surfaces that can possibly be hit by cosmic muons.
+//The convention used is :
+// - 0 = large surface watching the RPC
+// - 1 = large surface watching the sky
+// - 2 = small side surface on the left (wide RPC base side)
+// - 3 = small side surface on the right (narrow RPC base side
+// - 4 = medium surface watching the ground
+// - 5 = medium surface watching the sky
 struct Scintillator{
     Point MuonHit[6];
 };
@@ -115,12 +159,6 @@ struct RPC{
 };
 
 //********************************************************************************************
-
-//pi Definition
-const double PI = 4*atan(1);
-
-//Definition of the needed angles in radian
-const double alpha = atan(2*A_LENGTH/(A_WIDTH-AB_WIDTH));
 
 //Definition of usefull points
 const Point Orpc = {A_X0,A_Y0,A_Z0};
@@ -427,6 +465,5 @@ double getDistanceThroughRPC(Direction direction){
 
     return d;
 }
-
 
 #endif // FONCTIONS_H
