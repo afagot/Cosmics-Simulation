@@ -20,11 +20,11 @@ The goal is to store the strip in which they pass and then the final distributio
 
 The setup is as follows :
 
-![ScreenShot](https://raw.github.com/afagot/Cosmics-Simulation/master/img/Setup.jpg)
+![ScreenShot](https://raw.github.com/afagot/Cosmics-Simulation/RPC-School-Mexico-2018/img/Setup.jpg)
 
 and the corresponding cosmic muon distribution measured was :
 
-![ScreenShot](https://raw.github.com/afagot/Cosmics-Simulation/master/img/Distribution.jpg)
+![ScreenShot](https://raw.github.com/afagot/Cosmics-Simulation/RPC-School-Mexico-2018/img/Distribution.jpg)
 
 On this hit distribution histograms, a structure with 2 peaks can be identified. In order to confirm that the distribution is indeed due to muons, it is necessary to control the geometrical acceptance of the setup to cosmic muons.
 
