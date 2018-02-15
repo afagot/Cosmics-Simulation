@@ -477,12 +477,105 @@ As an example, here are results generated using wisely `object` and the table `S
 
 **Results.dat**
 ```
-
+A	1	0
+A	2	0
+A	3	0
+A	4	0
+A	5	0
+A	6	1
+A	7	2
+A	8	2
+A	9	2
+A	10	4
+A	11	3
+A	12	1
+A	13	7
+A	14	3
+A	15	8
+A	16	7
+A	17	8
+A	18	4
+A	19	7
+A	20	3
+A	21	2
+A	22	1
+A	23	2
+A	24	1
+A	25	2
+A	26	2
+A	27	2
+A	28	4
+A	29	0
+A	30	0
+A	31	0
+A	32	0
+B	1	0
+B	2	0
+B	3	0
+B	4	3
+B	5	7
+B	6	10
+B	7	24
+B	8	31
+B	9	30
+B	10	46
+B	11	70
+B	12	78
+B	13	125
+B	14	161
+B	15	208
+B	16	280
+B	17	352
+B	18	419
+B	19	541
+B	20	550
+B	21	549
+B	22	496
+B	23	383
+B	24	284
+B	25	254
+B	26	347
+B	27	370
+B	28	314
+B	29	193
+B	30	109
+B	31	58
+B	32	13
+C	1	0
+C	2	0
+C	3	0
+C	4	0
+C	5	0
+C	6	6
+C	7	0
+C	8	1
+C	9	0
+C	10	4
+C	11	1
+C	12	3
+C	13	6
+C	14	6
+C	15	4
+C	16	7
+C	17	11
+C	18	11
+C	19	4
+C	20	7
+C	21	6
+C	22	5
+C	23	5
+C	24	0
+C	25	1
+C	26	0
+C	27	1
+C	28	0
+C	29	1
+C	30	0
+C	31	2
+C	32	0
 ```
 
-### 4.2. Plotting the data
-
-## 5. Running the simulation
+### 4.2. Running the simulation
 
 Once your modifications are over and you want to test, compile the gif geometrical simulation via :
 
@@ -491,3 +584,21 @@ Once your modifications are over and you want to test, compile the gif geometric
 and, to launch the executable file to start the simulation for this given setup, use:
 
     bin/GIF-Geo
+
+### 4.3. Plotting the data
+
+You can use the python console provided by Jupiter Note to make histograms similar to the ones showing the real data. It is recomended to keep a similar layout for the histograms to easily compare the data to the simulation (3 vertical histograms on top of each other).
+
+### 4.4. Conclude
+
+If you were able to reach this step, then CONGRATULATIONS! It is now time to see if the simulation gave a hit profile comparable to the data. What is your answer??
+
+![Alt Text](https://media.giphy.com/media/3o6fIUZTTDl0IDjbZS/giphy.gif)
+
+## 5. Retrieving the solution if you didn't get the time to finish
+
+On another directorty of your machine (go out of `Cosmics-Simulation`), simply use a similar command than at the beginning :
+
+    git clone -b RPC-School-SOLUTION --single-branch https://github.com/afagot/Cosmics-Simulation
+
+This code generates the file Results.csv following the same steps described in Section 4.2..
