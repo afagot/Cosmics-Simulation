@@ -107,9 +107,12 @@ int main(){
     cout << endl;
 
     //Print number of hits per strip into output file
-    for(unsigned int p = 0; p < NPARTITIONS; p++)
-        for(unsigned int s = 0; s < NSTRIPS; s++)
-            output << getPartition(p) << '\t' << s+1 << '\t' << StripData[p][s] << endl;
+    output << "Strip_A\tnHits_A\tStrip_B\tHits_B\tStrip_C\tnHits_C\n";
+    for(unsigned int s = 0; s < NSTRIPS; s++){
+        output << s+1 << '\t' << StripData[0][s] << '\t'
+               << s+1 << '\t' << StripData[1][s] << '\t'
+               << s+1 << '\t' << StripData[2][s] << endl;
+    }
 
     output.close();
 
