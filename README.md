@@ -467,13 +467,7 @@ if (in_trigger){
 
 The file **main.cc** will be missing most of its original code. You will need to reconstitute the puzzle thanks to the indications given above in Section 3.. All the pieces are there and you will need to understand the algorithm used to make the simulation.
 
-When you find the right way to order the different pieces provided above, it is suggested for you to write the results into a file. The file object already exist as `output` that will open and write into a file called `Results.dat`. It is advised to write the data using 3 columns:
-
-- Column 1 : partition ID
-- Column 2 : strip number within the partition
-- Column 3 : number of hits recorded in the strip
-
-As an example, here are results generated using wisely `object` and the table `StripData`, which already exist as well:
+When you find the right way to order the different pieces provided above, it is suggested for you to write the results into a file. The file object already exist as `output` that will open and write into a file called `Results.dat`. As an example, here are results generated using wisely `object` and the table `StripData`, which already exist as well:
 
 **Results.dat**
 ```
