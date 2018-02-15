@@ -3,7 +3,7 @@
 #### supervised by Alexis Fagot
 #### email : alexis.fagot@ugent.be
 
-## Goal of the exercise
+## 1. Goal of the exercise
 
 The goal of this Monte Carlo simulation is to understand the cosmic muon distribution observed into a Resistive Plate Chamber (RPC) installed at the Gamma Irradiation Facility (GIF) at CERN.
 
@@ -21,9 +21,9 @@ and the corresponding cosmic muon distribution measured was :
 
 On this hit distribution histograms, a structure with 2 peaks can be identified. In order to confirm that the distribution is indeed due to muons, it is necessary to control the geometrical acceptance of the setup to cosmic muons. The goal is thus to complete this template of geometrical acceptance simulation and to check whether the distribution measured at GIF was right.
 
-## Guide lines
+## 2. Installation
 
-### Check for git to be installed on the computer
+### 2.1. Check for git to be installed on the computer
 
 To check if git is installed on your machine, you can try :
 
@@ -42,13 +42,13 @@ sudo yum install git
 - **On MacOS** (see [http://happygitwithr.com/install-git.html#mac-os](http://happygitwithr.com/install-git.html#mac-os))
 
 
-### Download from Github
+### 2.2. Download from Github
 
 Now that git is installed on your machine, to download this C++ simulation, open a terminal and type :
 
     git clone -b RPC-School-Mexico-2018 --single-branch https://github.com/afagot/Cosmics-Simulation
 
-### Structure of the simulation
+### 2.3. Structure of the simulation
 
 - img *(images used to illustrate this README.md file)*
   - Distribution.jpg
@@ -59,6 +59,66 @@ Now that git is installed on your machine, to download this C++ simulation, open
   - main.cc
 - makefile
 - README.md
+
+## 3. Guide lines
+
+### 3.1 Representation of the setup in the code
+
+The GIF setup is represented in the code as shown on the following figures. The RPC is represented in yellow, the scintillator telescope in blue and the cosmic generation plane in green.
+
+![ScreenShot](https://raw.github.com/afagot/Cosmics-Simulation/RPC-School-Mexico-2018/img/3Dview1.png)
+![ScreenShot](https://raw.github.com/afagot/Cosmics-Simulation/RPC-School-Mexico-2018/img/3Dview2.png)
+
+To achieve this results are are some keys of understanding of the code.
+
+#### 3.1.1. Setup dimensions
+
+First of all, the dimensions of the RPC and scintillators are defined as constants. Note that the angle `alpha` corresponds to the angle of the of the base of the RPC trapezoid with the floor. The angle `beta` is the inclination angle of the scintillator telescope.
+
+** fonctions.h**
+```c++
+//Dimensions of the RE2-2
+#define A_WIDTH  868.
+#define AB_WIDTH 758.8
+#define BC_WIDTH 662.4
+#define C_WIDTH  578.
+
+#define A_LENGTH 620.8
+#define B_LENGTH 548.
+#define C_LENGTH 480.
+
+#define AB_LENGTH   A_LENGTH+B_LENGTH
+#define BC_LENGTH   B_LENGTH+C_LENGTH
+#define ABC_LENGTH  A_LENGTH+B_LENGTH+C_LENGTH
+
+//Reference point a of the RPC
+
+#define A_X0 0.
+#define A_Y0 0.
+#define A_Z0 0.
+
+//Angle of the RPC du to trapezoidal shape (in rad)
+const double alpha = atan(2*A_LENGTH/(A_WIDTH-AB_WIDTH));
+```
+![ScreenShot](https://raw.github.com/afagot/Cosmics-Simulation/RPC-School-Mexico-2018/img/RPC-dimensions.png)
+
+** fonctions.h**
+```c++
+//Dimensions of the scintillator planes
+#define TRIGGER_LENGTH 320.
+#define TRIGGER_WIDTH 94.
+#define TRIGGER_THICK 45.
+#define TRIGGER_OFFSET 85.
+
+//Reference point a of the scintillator
+#define a_X0 770.
+#define a_Y0 -40.
+#define a_Z0 558.
+
+//Inclination angle of the trigger (10deg in rad)
+const double beta = DegToRad(10.);
+```
+![ScreenShot](https://raw.github.com/afagot/Cosmics-Simulation/RPC-School-Mexico-2018/img/Trigger-dimensions.png)
 
 ### Cosmic muon generator
 
