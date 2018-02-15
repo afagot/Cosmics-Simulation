@@ -149,6 +149,19 @@ Muons are generated following a cos^2(theta) distribution where theta is the azi
 
 **fonctions.h**
 ```c++
+//Shorthand notation to make the code more understadable and to allow for
+//drop-in replacement by another C++11 random number generator.
+typedef std::mt19937 Generator;
+
+//A fonction that generate a random position within a certain rectangle
+double getRandom(Generator& generator){
+    return generate_canonical<double, 32>(generator);
+}
+
+double getRandomInRange(Generator& generator, double x0, double length){
+    return length*getRandom(generator) + x0;
+}
+
 //A fonction that generates a cos^2 cosmics distribution
 Direction getRandomDirection(Generator& generator){
     double phi = 2*PI*getRandom(generator);
@@ -176,6 +189,134 @@ Point getRandomMuonPosition(Generator& generator, double height){
     muon.z = height;
 
     return muon;
+}
+```
+
+**main.cc**
+```c++
+// Start with random seed
+random_device rd;
+Generator generator(rd());
+
+// Get the thing started
+generator.discard(100);
+
+muonPos = getRandomMuonPosition(generator,a_Z0-TRIGGER_WIDTH*cos(beta));
+direction = getRandomDirection(generator);
+```
+### 3.4. Checking for muon hits in the trigger telescope
+
+Here, each scintillator is not defined as a physical volume. Instead, a scintillator is defined as 6 planes where muon hits can occur. Thus, the scintillator is defined as the coordinate of the intersection points of the muon track with these planes. Are used for this step the functions `getHitPositionBigFaces`, `getHitPositionMediumFaces`, `getHitPositionSmallFaces` and `setScint`.
+
+After getting these coordinate, the simulation checks whether the coordinates are contained within the scintillator surface or not using the functions `isInBigFace`, `isInMediumFace`, `isInSmallFace`, and `isInBottomScintillator` and `isInTopScintillator`.
+
+**fonctions.h**
+```c++
+//A structure that defines a scintillator as a rectangle parallelepiped having
+//6 surfaces that can possibly be hit by cosmic muons.
+//The convention used is :
+// - 0 = large surface watching the RPC
+// - 1 = large surface watching the sky
+// - 2 = small side surface on the left (wide RPC base side)
+// - 3 = small side surface on the right (narrow RPC base side
+// - 4 = medium surface watching the ground
+// - 5 = medium surface watching the sky
+struct Scintillator{
+    Point MuonHit[6];
+};
+
+//Compute the hit position in the scintillator planes knowing the equation of the planes
+//and using the origin of the muon, its direction
+Point getHitPositionBigFaces(const Point& P, const Direction& D, double offset, double beta){
+    Point I;
+
+    double t = (cos(beta)*(a_Y0-P.y)+sin(beta)*(P.z-a_Z0)-offset)
+    /(sin(D.first)*sin(D.second)*cos(beta)-cos(D.first)*sin(beta));
+
+    I.x = P.x + sin(D.first)*cos(D.second)*t;
+    I.y = P.y + sin(D.first)*sin(D.second)*t;
+    I.z = P.z + cos(D.first)*t;
+
+    return I;
+}
+
+Point getHitPositionMediumFaces(const Point& P, const Direction& D, double offset, double beta){
+    Point I;
+
+    double t = (sin(beta)*(a_Y0-P.y)+cos(beta)*(a_Z0-P.z)-offset)
+    /(cos(beta)*cos(D.first)+sin(beta)*sin(D.first)*sin(D.second));
+
+    I.x = P.x + sin(D.first)*cos(D.second)*t;
+    I.y = P.y + sin(D.first)*sin(D.second)*t;
+    I.z = P.z + cos(D.first)*t;
+
+    return I;
+}
+
+Point getHitPositionSmallFaces(const Point& P, const Direction& D, double offset, double beta){
+    Point I;
+
+    double t = (a_X0-P.x+offset)/(sin(D.first)*cos(D.second));
+
+    I.x = P.x + sin(D.first)*cos(D.second)*t;
+    I.y = P.y + sin(D.first)*sin(D.second)*t;
+    I.z = P.z + cos(D.first)*t;
+
+    return I;
+}
+
+//Set the hits of the muons into the scintillator planes
+void setScint(Scintillator& scint, const Point& P, const Direction& D, double offset, double beta){
+    scint.MuonHit[0] = getHitPositionBigFaces(P,D,offset,beta);
+    scint.MuonHit[1] = getHitPositionBigFaces(P,D,offset+TRIGGER_THICK,beta);
+    scint.MuonHit[2] = getHitPositionSmallFaces(P,D,0.,beta);
+    scint.MuonHit[3] = getHitPositionSmallFaces(P,D,TRIGGER_LENGTH,beta);
+    scint.MuonHit[4] = getHitPositionMediumFaces(P,D,0.,beta);
+    scint.MuonHit[5] = getHitPositionMediumFaces(P,D,TRIGGER_WIDTH,beta);
+}
+
+//Check if the muon is in the scintillator surfaces. For the big and medium faces,
+//it only is needed to express 2 conditions (on x and/or y and/or z) to restrict the
+//possible area to the surface of the face cause the faces are not rotated.
+//for the little side faces, it is needed to exclude using the line equations.
+bool isInBigFace(const Point& I, double offset, double beta){
+    bool x_condition = (I.x >= a_X0 && I.x <= (a_X0+TRIGGER_LENGTH));
+
+    double z_high = a_Z0 + offset*sin(beta);
+    double z_low = z_high - TRIGGER_WIDTH*cos(beta);
+
+    bool z_condition = ( I.z >= z_low && I.z <= z_high );
+    return (x_condition && z_condition);
+}
+
+bool isInMediumFace(const Point& I, double Yoffset, double Zoffset, double beta){
+    bool x_condition = (I.x >= a_X0 && I.x <= (a_X0+TRIGGER_LENGTH));
+
+    double z_low = a_Z0 - Zoffset*cos(beta) + Yoffset*sin(beta);
+    double z_high = z_low + TRIGGER_THICK*sin(beta);
+
+    bool z_condition = ( I.z >= z_low && I.z <= z_high );
+    return (x_condition && z_condition);
+}
+
+bool isInSmallFace(const Point& I, double offset, double beta){
+    bool is_below = (I.z <= (a_Z0 + (a_Y0-I.y)*sin(beta)/cos(beta)));
+    bool is_above = (I.z >= (a_Z0 + (a_Y0-I.y)*sin(beta)/cos(beta)) - TRIGGER_WIDTH/cos(beta));
+    bool is_on_right_of = (I.z >= (a_Z0 + (I.y-a_Y0)*cos(beta)/sin(beta) + offset/sin(beta)));
+    bool is_on_left_of = (I.z <= (a_Z0 + (I.y-a_Y0)*cos(beta)/sin(beta) + (offset+TRIGGER_THICK)/sin(beta)));
+
+    return (is_below && is_above && is_on_left_of && is_on_right_of);
+}
+
+//Due to the geometry of the setup, the only way for the muons to pass through the
+//telescope is to pass through the inner surfaces, i.e. the 2 surface in between
+//the 2 scintillators, the ones that are "looking to each other".
+bool isInBottomScintillator(const Scintillator& scint, double beta){
+    return isInBigFace(scint.MuonHit[1],TRIGGER_THICK,beta);
+}
+
+bool isInTopScintillator(const Scintillator& scint, double beta){
+    return isInBigFace(scint.MuonHit[0],TRIGGER_OFFSET,beta);
 }
 ```
 
