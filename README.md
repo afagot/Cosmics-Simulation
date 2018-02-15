@@ -514,9 +514,9 @@ Strip_A	nHits_A	Strip_B	nHits_B	Strip_C	nHits_C
 
 ### 4.2. Running the simulation
 
-First of all, you will need to install g++ compiler on the computer as it is not installed on the machine of the computer room :
+First of all, you will need to install g++ compiler and ncurses libraries on the computer as it is not installed on the machine of the computer room :
 
-    sudo apt-get install g++
+    sudo apt-get install g++ libncurses5-dev
 
 Once your modifications are over and you want to test, compile the gif geometrical simulation via :
 
