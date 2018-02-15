@@ -149,12 +149,12 @@ struct Trapezoid{
 typedef Trapezoid RPCStrip;
 
 struct RPCPartition{
-    RPCStrip strips[32];
+    RPCStrip strips[NSTRIPS];
     Trapezoid corners;
 };
 
 struct RPC{
-    RPCPartition part[3];
+    RPCPartition part[NPARTITIONS];
     Trapezoid corners;
 };
 
@@ -228,8 +228,7 @@ Point getRandomMuonPosition(Generator& generator, double height){
 }
 
 //Compute the hit position in the scintillator planes knowing the equation of the planes
-//calculated by hand and using the origin of the muon, its direction (details on calculation
-//in the hand notebook)
+//and using the origin of the muon, its direction
 Point getHitPositionBigFaces(const Point& P, const Direction& D, double offset, double beta){
     Point I;
 

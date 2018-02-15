@@ -204,6 +204,7 @@ generator.discard(100);
 muonPos = getRandomMuonPosition(generator,a_Z0-TRIGGER_WIDTH*cos(beta));
 direction = getRandomDirection(generator);
 ```
+
 ### 3.4. Checking for muon hits in the trigger telescope
 
 Here, each scintillator is not defined as a physical volume. Instead, a scintillator is defined as 6 planes where muon hits can occur. Thus, the scintillator is defined as the coordinate of the intersection points of the muon track with these planes. Are used for this step the functions `getHitPositionBigFaces`, `getHitPositionMediumFaces`, `getHitPositionSmallFaces` and `setScint`.
@@ -320,7 +321,168 @@ bool isInTopScintillator(const Scintillator& scint, double beta){
 }
 ```
 
-### Running the simulation
+**main.cc**
+```c++
+//Definition of the scintillators
+Scintillator botScint, topScint;
+
+setScint(botScint,muonPos,direction,0.,beta);
+setScint(topScint,muonPos,direction,TRIGGER_OFFSET,beta);
+
+bool in_trigger = isInBottomScintillator(botScint,beta) && isInTopScintillator(topScint,beta);
+```
+
+### 3.5. Checking for muon hits in the RPC
+
+Once we made sure the muon passed through both scintillators, generating a trigger in the DAQ software of GIF, we need to check for the corresponding hit within the RPC plane. Using the available functions, it is possible to assign to each muon, a partition and a strip. What it means is that we are able to determine in which one of the 3 partitions the muon passed and, within this partition, to determine in which strip the hit occured.
+
+The RPC, partitions and strips are defined as trapezoids using the 4 corners. An RPC possesses 3 partitions and a partition possesses 32 strips. Setting an RPC is done via `setRPC` that calls `setPartitions` that, itself, call `setStrips`.
+
+The hit position within the RPC plane can be obtained through `getHitPositionRPC`.
+
+Finally, to check if the hit is in the RPC itself, a specific partition, or a specific strip, you can call `isInTrapezoid`.
+
+**fonctions.h**
+```c++
+//A structure that defines a trapezoid in the (x,0,z) plane using 4 points
+//This structure is then used into the RPCPartition structure itself used
+//in RPC
+struct Trapezoid{
+    Point corner[4];
+};
+typedef Trapezoid RPCStrip;
+
+struct RPCPartition{
+    RPCStrip strips[NSTRIPS];
+    Trapezoid corners;
+};
+
+struct RPC{
+    RPCPartition part[NPARTITIONS];
+    Trapezoid corners;
+};
+
+//Used to easily set the corners of the trapezoid strips using a vector and
+//a factor that is proportionnal to the strip position or simply of the corners
+//of the Partitions or of the RPC itself
+void setPoint(Point& M, Point P, const Vector vect, double factor){
+    M.x = P.x + factor*vect.x;
+    M.y = P.y + factor*vect.y;
+    M.z = P.z + factor*vect.z;
+}
+
+//Set the strip corners in a given partition
+void setStrips(RPCStrip& strip, Trapezoid part, Vector V[2], int factor){
+    setPoint(strip.corner[0],part.corner[0],V[0],factor*1./32.);
+    setPoint(strip.corner[1],part.corner[0],V[0],(factor+1)*1./32.);
+    setPoint(strip.corner[2],part.corner[3],V[1],(factor+1)*1./32.);
+    setPoint(strip.corner[3],part.corner[3],V[1],factor*1./32.);
+}
+
+//Set the corners of the 3 partitions and call the function that sets the
+//strips in every partition
+void setPartitions(RPCPartition (&part)[3], Trapezoid rpc){
+    setPoint(part[0].corners.corner[0],rpc.corner[0],null,0.);
+    setPoint(part[0].corners.corner[1],rpc.corner[1],null,0.);
+    setPoint(part[0].corners.corner[3],part[0].corners.corner[0],V_rpc,A_LENGTH);
+    setPoint(part[0].corners.corner[2],part[0].corners.corner[3],U_rpc,AB_WIDTH);
+
+    setPoint(part[1].corners.corner[0],part[0].corners.corner[3],null,0.);
+    setPoint(part[1].corners.corner[1],part[0].corners.corner[2],null,0.);
+    setPoint(part[1].corners.corner[3],part[1].corners.corner[0],V_rpc,B_LENGTH);
+    setPoint(part[1].corners.corner[2],part[1].corners.corner[3],U_rpc,BC_WIDTH);
+
+    setPoint(part[2].corners.corner[0],part[1].corners.corner[3],null,0.);
+    setPoint(part[2].corners.corner[1],part[1].corners.corner[2],null,0.);
+    setPoint(part[2].corners.corner[2],rpc.corner[2],null,0.);
+    setPoint(part[2].corners.corner[3],rpc.corner[3],null,0.);
+
+    Vector V_strip[3][2];
+
+    for(int p = 0; p < 3; p++){
+        V_strip[p][0] = makeVector(part[p].corners.corner[0],part[p].corners.corner[1]);
+        V_strip[p][1] = makeVector(part[p].corners.corner[3],part[p].corners.corner[2]);
+
+        for(int s=0; s<32; s++)
+            setStrips(part[p].strips[s],part[p].corners,V_strip[p],s);
+    }
+}
+
+//Set the RPC corners and call the function to set the partitions and their strips
+void setRPC(RPC& rpc){
+    setPoint(rpc.corners.corner[0],Orpc,null,0.);
+    setPoint(rpc.corners.corner[1],Orpc,U_rpc,A_WIDTH);
+    setPoint(rpc.corners.corner[3],Orpc,V_rpc,ABC_LENGTH);
+    setPoint(rpc.corners.corner[2],rpc.corners.corner[3],U_rpc,C_WIDTH);
+
+    setPartitions(rpc.part, rpc.corners);
+}
+
+//Compute the hit position in the RPC plan knowing that equation of the plane is y=0
+Point getHitPositionRPC(const Point& P, const Direction& D){
+    Point I;
+
+    I.x = P.x - P.y*cos(D.second)/sin(D.second);
+    I.y = 0.;
+    I.z = P.z - P.y*cos(D.first)/sin(D.first)/sin(D.second);
+
+    return I;
+}
+
+//Function to test if the muon is in a given trapezoid (RPC, Partition or Strip)
+bool isInTrapezoid(const Point& I, const Trapezoid& trap){
+    Point A = trap.corner[0];
+    Point B = trap.corner[1];
+    Point C = trap.corner[2];
+    Point D = trap.corner[3];
+
+    return      (I.z <= (I.x-A.x)*(B.z-A.z)/(B.x-A.x)+A.z)
+    &&  (I.z <= (I.x-B.x)*(C.z-B.z)/(C.x-B.x)+B.z)
+    &&  (I.z >= (I.x-C.x)*(D.z-C.z)/(D.x-C.x)+C.z)
+    &&  (I.z >= (I.x-D.x)*(A.z-D.z)/(A.x-D.x)+D.z);
+}
+```
+
+**main.cc**
+```c++
+//Definition of the RPC
+RPC Rpc;
+setRPC(Rpc);
+
+if (in_trigger){
+    RPCPos = getHitPositionRPC(muonPos,direction);
+
+    if(isInTrapezoid(RPCPos, Rpc.corners))
+        for(unsigned int p = 0; p < NPARTITIONS; p++)
+            if(isInTrapezoid(RPCPos,Rpc.part[p].corners))
+                for(unsigned int s = 0; s < NSTRIPS; s++)
+                    if(isInTrapezoid(RPCPos,Rpc.part[p].strips[s]))
+                        StripData[p][s]++;
+}
+```
+
+## 4. Guide line for the exercise
+
+### 4.1. Assembling the puzzle and extracting the data
+
+The file **main.cc** will be missing most of its original code. You will need to reconstitute the puzzle thanks to the indications given above in Section 3.. All the pieces are there and you will need to understand the algorithm used to make the simulation.
+
+When you find the right way to order the different pieces provided above, it is suggested for you to write the results into a file. The file object already exist as `output` that will open and write into a file called `Results.dat`. It is advised to write the data using 3 columns:
+
+- Column 1 : partition ID
+- Column 2 : strip number within the partition
+- Column 3 : number of hits recorded in the strip
+
+As an example, here are results generated using wisely `object` and the table `StripData`, which already exist as well:
+
+**Results.dat**
+```
+
+```
+
+### 4.2. Plotting the data
+
+## 5. Running the simulation
 
 Once your modifications are over and you want to test, compile the gif geometrical simulation via :
 
