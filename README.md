@@ -510,10 +510,6 @@ Strip_A	nHits_A	Strip_B	nHits_B	Strip_C	nHits_C
 30	0	30	109	30	0
 31	0	31	58	31	2
 32	0	32	13	32	0
-C	29	1
-C	30	0
-C	31	2
-C	32	0
 ```
 
 ### 4.2. Running the simulation
