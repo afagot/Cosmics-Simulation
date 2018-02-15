@@ -60,7 +60,7 @@ Now that git is installed on your machine, to download this C++ simulation, open
 - makefile
 - README.md
 
-## 3. Guide lines
+## 3. Code details
 
 ### 3.1 Representation of the setup in the code
 
@@ -71,11 +71,11 @@ The GIF setup is represented in the code as shown on the following figures. The 
 
 To achieve this results are are some keys of understanding of the code.
 
-#### 3.1.1. Setup dimensions
+### 3.2. Setup dimensions
 
 First of all, the dimensions of the RPC and scintillators are defined as constants. Note that the angle `alpha` corresponds to the angle of the of the base of the RPC trapezoid with the floor. The angle `beta` is the inclination angle of the scintillator telescope.
 
-** fonctions.h**
+**fonctions.h**
 ```c++
 //Dimensions of the RE2-2
 #define A_WIDTH  868.
@@ -102,7 +102,7 @@ const double alpha = atan(2*A_LENGTH/(A_WIDTH-AB_WIDTH));
 ```
 ![ScreenShot](https://raw.github.com/afagot/Cosmics-Simulation/RPC-School-Mexico-2018/img/RPC-dimensions.png)
 
-** fonctions.h**
+**fonctions.h**
 ```c++
 //Dimensions of the scintillator planes
 #define TRIGGER_LENGTH 320.
@@ -120,9 +120,64 @@ const double beta = DegToRad(10.);
 ```
 ![ScreenShot](https://raw.github.com/afagot/Cosmics-Simulation/RPC-School-Mexico-2018/img/Trigger-dimensions.png)
 
-### Cosmic muon generator
+Finally, the function `getRandomMuonPosition` allows to generate a muon in a predefined (x,y) plane. The user decides on the height. In this example, the plane is defined right bellow the lowest edge of the trigger telescope.
 
-Muons are generated following a cos^2(theta) distribution where theta is the azimutal incidence angle of muons on Earth.
+**fonctions.h**
+```c++
+//Generate a random hit in the cosmic plane that is defined to be situated
+//right at the height of the lowest point of the scintillators via the
+//variable height
+Point getRandomMuonPosition(Generator& generator, double height){
+    Point muon;
+
+    muon.x = getRandomInRange(generator, -1000., 3000.);
+    muon.y = getRandomInRange(generator, -2000., 2500.);
+    muon.z = height;
+
+    return muon;
+}
+```
+
+**main.cc**
+```c++
+muonPos = getRandomMuonPosition(generator,a_Z0-TRIGGER_WIDTH*cos(beta));
+```
+
+### 3.3. Cosmic muon generator
+
+Muons are generated following a cos^2(theta) distribution where theta is the azimutal incidence angle of muons on Earth. this is done using the functions described bellow. By convention, `theta` is the zenithal angle and `phi` the azimuthal angle. These 2 angles associated to a random position in the generation plane are enough to compute the muon trajectory.
+
+**fonctions.h**
+```c++
+//A fonction that generates a cos^2 cosmics distribution
+Direction getRandomDirection(Generator& generator){
+    double phi = 2*PI*getRandom(generator);
+
+    // Create cos²(theta) distribution
+    double theta = PI*getRandom(generator)/2.;
+    double test = getRandom(generator);
+
+    while (test > cos(theta)*cos(theta)){
+        theta = PI*getRandom(generator)/2.;
+        test = getRandom(generator);
+    }
+
+    return make_pair(theta, phi);
+}
+
+//Generate a random hit in the cosmic plane that is defined to be situated
+//right at the height of the lowest point of the scintillators via the
+//variable height
+Point getRandomMuonPosition(Generator& generator, double height){
+    Point muon;
+
+    muon.x = getRandomInRange(generator, -1000., 3000.);
+    muon.y = getRandomInRange(generator, -2000., 2500.);
+    muon.z = height;
+
+    return muon;
+}
+```
 
 ### Running the simulation
 
