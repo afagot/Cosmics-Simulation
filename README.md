@@ -32,13 +32,13 @@ To check if git is installed on your machine, you can try :
 If this command returns nothing, this means you will need to install the package.
 
 - **On Debian based distributions**
-
-    sudo apt-get install git
-
+```
+sudo apt-get install git
+```
 - **On RedHat based distributions**
-
-    sudo yum install git
-
+```
+sudo yum install git
+```
 - **On MacOS** (see [http://happygitwithr.com/install-git.html#mac-os](http://happygitwithr.com/install-git.html#mac-os))
 
 
@@ -51,12 +51,12 @@ Now that git is installed on your machine, to download this C++ simulation, open
 ### Structure of the simulation
 
 - img *(images used to illustrate this README.md file)*
-  - \> Distribution.jpg
-  - \> Setup.jpg
+  - Distribution.jpg
+  - Setup.jpg
 - include
   - fonctions.h
 - src
-  - \> main.cc
+  - main.cc
 - makefile
 - README.md
 
