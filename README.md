@@ -1,8 +1,8 @@
-#GIF Cosmic Muon Monte Carlo Simulation
-####Author: Alexis Fagot
-####email : alexis.fagot@ugent.be
+# GIF Cosmic Muon Monte Carlo Simulation
+#### Author: Alexis Fagot
+#### email : alexis.fagot@ugent.be
 
-##Compilation
+## Compilation
 
 This application requires 1 non-optional dependencies:
 
